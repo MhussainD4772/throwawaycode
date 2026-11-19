@@ -3,10 +3,15 @@
 **Purpose**
 Test scripts can now validate emails that the application under test sends, such as tokens, confirmations, reference numbers and links, as part of an end-to-end automated flow.
 
-ETAF opens Outlook using the tester's own Windows login, with no credentials stored anywhere, so email-based steps no longer have to be checked by hand.
+**How it works**
 
-- **OutlookBrowser:** opens Outlook, already signed in
-- **OutlookMailReader:** finds the expected email and extracts the value you need
+**OutlookBrowser: gets you into Outlook**
+Opens Outlook in the test browser, already signed in as the tester running the test. It uses your Windows login, so no username or password is ever stored or typed. After the first sign-in, your session is remembered and Outlook opens directly on later runs. If the session expires, it signs you in again on its own.
+
+**OutlookMailReader: finds the right email and reads it**
+Searches Outlook for the email your test is waiting on and keeps checking until it arrives. Only a recent email is accepted, so a test never passes on an old one by mistake. Once found, it returns the email content and pulls out exactly the value your test needs, such as a token, a number or a link. If the email doesn't arrive in time, the test fails with a clear message.
+
+Together, a test can trigger an action in the application, confirm the resulting email was received, and use its contents in the next step, all without manual checking.
 
 **Usage**
 To try it on your machine, add this class to your project, run it, then delete it:
