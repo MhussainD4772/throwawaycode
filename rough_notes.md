@@ -68,3 +68,5 @@ public void weFindUnusedAddress(
             "No unused address found "
             + "after 10 attempts");
 }
+
+document_row: "xpath_(//*[@id='dgTransactions']//div[contains(@class,'DataGridContainerContent')]//tr[td[normalize-space()]])[1]"
