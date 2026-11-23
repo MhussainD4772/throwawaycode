@@ -70,3 +70,15 @@ public void weFindUnusedAddress(
 }
 
 document_row: "xpath_(//*[@id='dgTransactions']//div[contains(@class,'DataGridContainerContent')]//tr[td[normalize-space()]])[1]"
+
+home_phone_row: "xpath_//tr[td[normalize-space()='Home Phone']]"
+primary_phone_row: "xpath_//tr[td[contains(normalize-space(),'Phone')]][.//img]"
+email_row: "xpath_//tr[td[normalize-space()='E-Mail Address']]"
+
+
+ When we click on navigator page navigator_page locator Contact_methods_tab
+And time out for 2 seconds
+Then we contain on navigator page navigator_page of locator home_phone_row value "<phone>"
+And we contain on navigator page navigator_page of locator primary_phone_row value "Home Phone"
+And we contain on navigator page navigator_page of locator email_row value "<email>"
+And we capture screenshot on navigator page navigator_page locator body name "contact_methods"
