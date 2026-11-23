@@ -113,3 +113,5 @@ And we contain on navigator page navigator_page of locator family_foreign_offici
 And we contain on navigator page navigator_page of locator diplomat_flt value "N"
 And we contain today's date on navigator page navigator_page of locator accept_email_delivery_flt
 And we capture screenshot on navigator page navigator_page locator body name "additional_info"
+
+document_count_flt: "xpath_//input[@id='hiddenRecordTotal' and number(@value) > 0]"
