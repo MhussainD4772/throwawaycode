@@ -117,3 +117,6 @@ And we capture screenshot on navigator page navigator_page locator body name "ad
 document_count_flt: "xpath_//input[@id='hiddenRecordTotal' and number(@value) > 0]"
 
 customer_header_bar: "xpath_//td[starts-with(normalize-space(),'Customer ') and contains(normalize-space(),' - ')][not(.//td)]"
+
+relation_address_home_nav_flt: "xpath_//tr[*[normalize-space()='Address 1']]/following-sibling::tr[1]"
+relation_address_mailing_nav_flt: "xpath_//tr[*[normalize-space()='Address 1']]/following-sibling::tr[2]"
