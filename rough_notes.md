@@ -115,3 +115,5 @@ And we contain today's date on navigator page navigator_page of locator accept_e
 And we capture screenshot on navigator page navigator_page locator body name "additional_info"
 
 document_count_flt: "xpath_//input[@id='hiddenRecordTotal' and number(@value) > 0]"
+
+customer_header_bar: "xpath_//td[starts-with(normalize-space(),'Customer ') and contains(normalize-space(),' - ')][not(.//td)]"
