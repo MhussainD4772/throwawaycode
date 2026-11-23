@@ -1,44 +1,70 @@
-**ETAF enhancement: Outlook Automation**
-
-**Purpose**
-Test scripts can now validate emails that the application under test sends, such as tokens, confirmations, reference numbers and links, as part of an end-to-end automated flow.
-
-**How it works**
-
-**OutlookBrowser: gets you into Outlook**
-Opens Outlook in the test browser, already signed in as the tester running the test. It uses your Windows login, so no username or password is ever stored or typed. After the first sign-in, your session is remembered and Outlook opens directly on later runs. If the session expires, it signs you in again on its own.
-
-**OutlookMailReader: finds the right email and reads it**
-Searches Outlook for the email your test is waiting on and keeps checking until it arrives. Only a recent email is accepted, so a test never passes on an old one by mistake. Once found, it returns the email content and pulls out exactly the value your test needs, such as a token, a number or a link. If the email doesn't arrive in time, the test fails with a clear message.
-
-Together, a test can trigger an action in the application, confirm the resulting email was received, and use its contents in the next step, all without manual checking.
-
-**Usage**
-To try it on your machine, add this class to your project, run it, then delete it:
-
-```java
-package com.ptaf.utils;
-
-import com.microsoft.playwright.*;
-
-public class OutlookCheck {
-    public static void main(String[] args) {
-        try (Playwright playwright = Playwright.create()) {
-            BrowserContext outlook = OutlookBrowser.open(playwright);
-            System.out.println("Outlook opened successfully");
-            outlook.close();
-        }
-    }
+// Generates a new address for the test case,
+// using the street name from address.json
+@Given("^we generate next address for testCase (.*?)$")
+public void weGenerateNextAddress(String testCaseId)
+        throws Exception {
+    newAddress(testCaseId);
 }
-```
 
-The first run opens Edge and signs you in automatically. Later runs open Outlook directly.
+// Builds a new address and saves it as
+// the current address for later steps
+public static String newAddress(String testCaseId)
+        throws Exception {
+    com.google.gson.JsonObject streets =
+            com.google.gson.JsonParser.parseString(
+                java.nio.file.Files.readString(
+                    java.nio.file.Paths.get(
+                        "src/test/resources/data/address.json")))
+            .getAsJsonObject();
 
-**Artifact version supporting this feature**
-```xml
-<dependency>
-    <groupId>com.fnb_ptaf</groupId>
-    <artifactId>fnb_ptaf</artifactId>
-    <version>1.0.0-10879</version>
-</dependency>
-```
+    currentAddress = (System.currentTimeMillis() % 100000)
+            + " " + streets.get(testCaseId).getAsString();
+
+    System.out.println("Generated address: " + currentAddress);
+    return currentAddress;
+}
+
+
+
+
+// Finds an address not yet in Navigator,
+// retrying until the search returns
+// no records, then writes it to Excel.
+@Given("^we find unused address on "
+        + "navigator frame (.*?) locator (.*?) "
+        + "for testCase (.*?) and write to "
+        + "excel column \"(.*?)\"$")
+public void weFindUnusedAddress(
+        String element,
+        String locator,
+        String testCaseId,
+        String column) throws Exception {
+
+    for (int attempt = 1;
+         attempt <= 10; attempt++) {
+
+        String address = FrameCommonSteps
+                .newAddress(testCaseId);
+
+        frameCommonMethods.fill(
+                page, navigator_main, null, null,
+                element, locator, address);
+        frameCommonMethods.click(
+                page, navigator_main, null, null,
+                element, "submit_btn");
+        page.waitForTimeout(3000);
+
+        if (noRecordsFound(page)) {
+            ExcelWriter.writeData(filePath,
+                    testCaseId, column, address);
+            System.out.println(
+                    "Unused address: " + address);
+            return;
+        }
+        System.out.println("Address " + address
+                + " in use, trying another one");
+    }
+    throw new RuntimeException(
+            "No unused address found "
+            + "after 10 attempts");
+}
