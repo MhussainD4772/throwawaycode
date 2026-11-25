@@ -1,48 +1,51 @@
-// Checks the hidden document count field
-// (two frames deep). Fails if the field is
-// missing; passes only if there are no
-// documents (value empty or 0).
-@Then("^we verify on second frame "
-        + "there are no documents$")
-public void weVerifyNoDocuments() {
+**1. Backend: allow only the UI.** In IntelliJ, right-click `com.ptaf.backend`, choose **New → Java Class**, name it `WebConfig`, and paste:
 
-    Locator field = iframePage
-            .frameLocator(iFrame)
-            .frameLocator(iFrame_2)
-            .locator("#hiddenRecordTotal");
+```java
+package com.ptaf.backend;
 
-    try {
-        field.first().waitFor(
-                new Locator.WaitForOptions()
-                        .setState(WaitForSelectorState.ATTACHED)
-                        .setTimeout(10000));
-    } catch (PlaywrightException e) {
-        throw new AssertionError(
-                "hiddenRecordTotal not found. "
-                + "Check the frame.");
-    }
+import org.springframework.context.annotation.Configuration;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-    String raw = field.first().getAttribute("value");
-    String value = raw == null ? "" : raw.trim();
-    System.out.println(
-            "Document count value: [" + value + "]");
+// Lets the UI page at localhost:5173 call
+// this backend. No other website can.
+@Configuration
+public class WebConfig implements WebMvcConfigurer {
 
-    int count;
-    try {
-        count = Integer.parseInt(value);
-    } catch (NumberFormatException e) {
-        count = 0;
-    }
-
-    if (count > 0) {
-        throw new AssertionError(
-                "Expected no documents, but found "
-                + count);
+    @Override
+    public void addCorsMappings(CorsRegistry registry) {
+        registry.addMapping("/api/**")
+                .allowedOrigins("http://localhost:5173")
+                .allowedMethods("GET", "POST");
     }
 }
+```
 
+Then restart `BackendApplication`: stop it, then ▶ again.
 
-import com.microsoft.playwright.options.WaitForSelectorState;
+**2. Frontend: call the backend directly.** In VS Code, open `frontend/src/App.tsx` and replace the `fetch` line with:
 
+```tsx
+const res = await fetch(
+  `http://127.0.0.1:8000/api/runs?tag=${encodeURIComponent(tag)}`,
+  { method: 'POST' })
+```
 
-Then we verify on second frame there are no documents
+**3. Remove the forwarding.** Replace everything in `frontend/vite.config.ts` with:
+
+```ts
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+
+export default defineConfig({
+  plugins: [react()],
+})
+```
+
+**4. Restart and test.** In the VS Code terminal, press **Ctrl+C**, then run:
+
+```powershell
+npm run dev
+```
+
+Open **http://localhost:5173**, check the tag box says `@ui`, and click **Run** once. Send me a screenshot of the result.
