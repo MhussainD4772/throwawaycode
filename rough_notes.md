@@ -1,23 +1,29 @@
-// Reads hiddenRecordTotal (two frames deep)
-// and passes only if there are no documents.
-// Fails if the field itself isn't found,
-// so it can't pass for the wrong reason.
-@Then("^we verify on second frame (.*?) "
-        + "locator (.*?) has no documents$")
-public void weVerifyHasNoDocuments(
-        String element, String locator) {
+// Checks the hidden document count field
+// (two frames deep). Fails if the field is
+// missing; passes only if there are no
+// documents (value empty or 0).
+@Then("^we verify on second frame "
+        + "there are no documents$")
+public void weVerifyNoDocuments() {
 
-    String raw = frameCommonMethods
-            .getStringValue(iframePage, iFrame,
-                    iFrame_2, null, element, locator);
+    Locator field = iframePage
+            .frameLocator(iFrame)
+            .frameLocator(iFrame_2)
+            .locator("#hiddenRecordTotal");
 
-    if (raw == null) {
+    try {
+        field.first().waitFor(
+                new Locator.WaitForOptions()
+                        .setState(WaitForSelectorState.ATTACHED)
+                        .setTimeout(10000));
+    } catch (PlaywrightException e) {
         throw new AssertionError(
                 "hiddenRecordTotal not found. "
                 + "Check the frame.");
     }
 
-    String value = raw.trim();
+    String raw = field.first().getAttribute("value");
+    String value = raw == null ? "" : raw.trim();
     System.out.println(
             "Document count value: [" + value + "]");
 
@@ -36,5 +42,7 @@ public void weVerifyHasNoDocuments(
 }
 
 
+import com.microsoft.playwright.options.WaitForSelectorState;
 
-Then we verify on second frame document_manger_page locator document_count_flt has no documents
+
+Then we verify on second frame there are no documents
